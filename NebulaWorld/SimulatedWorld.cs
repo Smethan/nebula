@@ -1,10 +1,12 @@
 ﻿using HarmonyLib;
 using NebulaModel.DataStructures;
 using NebulaModel.Logger;
+using NebulaModel.Packets.Logistics;
 using NebulaModel.Packets.Planet;
 using NebulaModel.Packets.Players;
 using NebulaModel.Packets.Trash;
 using NebulaWorld.Factory;
+using NebulaWorld.Logistics;
 using NebulaWorld.MonoBehaviours.Remote;
 using NebulaWorld.Planet;
 using NebulaWorld.Trash;
@@ -37,6 +39,7 @@ namespace NebulaWorld
 
         public static void Initialize()
         {
+            StationUIManager.Initialize();
             FactoryManager.Initialize();
             PlanetManager.Initialize();
             Initialized = true;
@@ -213,6 +216,34 @@ namespace NebulaWorld
                     LocalPlayer.SendPacket(new PlayerColorChanged(playerId, color));
                 }
             }
+        }
+
+        public static void OnILSShipUpdate(ILSShipData packet)
+        {
+            Debug.Log("SimulatedWOrld");
+            if (packet.IdleToWork)
+            {
+                ILSShipManager.IdleShipGetToWork(packet);
+            }
+            else
+            {
+                ILSShipManager.WorkShipBackToIdle(packet);
+            }
+        }
+
+        public static void OnILSShipItemsUpdate(ILSShipItems packet)
+        {
+            ILSShipManager.AddTakeItem(packet);
+        }
+
+        public static void OnStationUIChange(StationUI packet)
+        {
+            StationUIManager.UpdateUI(packet);
+        }
+
+        public static void OnILSRemoteOrderUpdate(ILSRemoteOrderData packet)
+        {
+            ILSShipManager.UpdateRemoteOrder(packet);
         }
 
         public static void MineVegetable(VegeMined packet)

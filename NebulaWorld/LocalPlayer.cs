@@ -13,7 +13,7 @@ namespace NebulaWorld
         public static ushort PlayerId => Data.PlayerId;
         public static PlayerData Data { get; private set; }
         public static Dictionary<int, byte[]> PendingFactories { get; set; } = new Dictionary<int, byte[]>();
-        public static Dictionary<PrebuildData, int> prebuildReceivedList { get; set; } = new Dictionary<PrebuildData, int>();
+        public static Dictionary<string, bool> PatchLocks { get; set; } = new Dictionary<string, bool>();
 
         private static INetworkProvider networkProvider;
 
@@ -44,6 +44,7 @@ namespace NebulaWorld
 
         public static void SetReady()
         {
+
             if (!IsMasterClient)
             {
                 // Notify the server that we are done with loading the game
@@ -59,12 +60,19 @@ namespace NebulaWorld
             {
                 //Subscribe for the local star events
                 LocalPlayer.SendPacket(new PlayerUpdateLocalStarId(GameMain.data.localStar.id));
+                PatchLocks["GalacticTransport"] = false; // after inital sync we need to set this back to false
             }
         }
 
         public static void SetPlayerData(PlayerData data)
         {
             Data = data;
+            PatchLocks.Clear();
+            PatchLocks.Add("PlanetTransport", false);
+            PatchLocks.Add("UIStationWindow", false);
+            PatchLocks.Add("UIStationStorage", false);
+            PatchLocks.Add("StationComponent", false);
+            PatchLocks.Add("GalacticTransport", true); // true so we dont request gid data twice on game load
         }
 
         public static void LeaveGame()
